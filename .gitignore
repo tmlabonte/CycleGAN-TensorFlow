@@ -94,6 +94,9 @@ data/
 # checkpoints
 checkpoints/
 
+# protobufs
+protobufs/
+
 # model
 pretrained
 
