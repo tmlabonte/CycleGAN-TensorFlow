@@ -8,21 +8,31 @@ python export_graph.py --checkpoint_dir checkpoints/20170424-1152 \
 """
 
 import tensorflow as tf
-import os
-from tensorflow.python.tools.freeze_graph import freeze_graph
 from model import CycleGAN
 import utils
 
 FLAGS = tf.flags.FLAGS
 
-tf.flags.DEFINE_string('checkpoint_dir', '', 'checkpoints directory path')
-tf.flags.DEFINE_string('XtoY_model', 'apple2orange.pb', 'XtoY model name, default: apple2orange.pb')
-tf.flags.DEFINE_string('YtoX_model', 'orange2apple.pb', 'YtoX model name, default: orange2apple.pb')
-tf.flags.DEFINE_integer('image_size', '256', 'image size, default: 256')
+tf.flags.DEFINE_string('checkpoint_dir',
+                       'checkpoints/20180628-1208',
+                       'checkpoints directory path')
+
+tf.flags.DEFINE_string('XtoY_model',
+                       'gaussian2sinusoidal.pb',
+                       'XtoY model name, default: gaussian2sinusoidal.pb')
+
+tf.flags.DEFINE_string('YtoX_model',
+                       'sinusoidal2gaussian.pb',
+                       'YtoX model name, default: sinusoidal2gaussian.pb')
+
+tf.flags.DEFINE_integer('image_size', '64', 'image size, default: 64')
+
 tf.flags.DEFINE_integer('ngf', 64,
-                        'number of gen filters in first conv layer, default: 64')
+                        'number of gen filters in first conv, default: 64')
+
 tf.flags.DEFINE_string('norm', 'instance',
                        '[instance, batch] use instance norm or batch norm, default: instance')
+
 
 def export_graph(model_name, XtoY=True):
   graph = tf.Graph()
@@ -45,8 +55,9 @@ def export_graph(model_name, XtoY=True):
     sess.run(tf.global_variables_initializer())
     latest_ckpt = tf.train.latest_checkpoint(FLAGS.checkpoint_dir)
     restore_saver.restore(sess, latest_ckpt)
+
     output_graph_def = tf.graph_util.convert_variables_to_constants(
-        sess, graph.as_graph_def(), [output_image.op.name])
+      sess, graph.as_graph_def(), [output_image.op.name])
 
     tf.train.write_graph(output_graph_def, 'pretrained', model_name, as_text=False)
 
